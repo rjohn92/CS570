@@ -1,1 +1,121 @@
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+
+public class Anagrams {
+	final int[] primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89,
+			97, 101 };
+	Map<Character, Integer> letterTable;
+	Map<Long, ArrayList<String>> anagramTable;
+
+	private Anagrams() {
+		buildLetterTable();
+		anagramTable = new HashMap<>();
+	}
+
+	// We have to create our table that will be used in myHashCode
+	private void buildLetterTable() {
+		// we have our characters that make up the alphabet.
+		Character character[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+				'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+		/*
+		 * our lettertable will be assigned a character that maps from a character to an
+		 * integer value that we have already noted in our primes value.
+		 */
+		letterTable = new HashMap<Character, Integer>();
+		/*
+		 * while our i value is less than the number of chars we have (from 0 to 25)
+		 * inclusive, we will put our character to a prime value.
+		 */
+		for (int i = 0; i < 26; i++) {
+			letterTable.put(character[i], primes[i]);
+		}
+
+	}
+	//we will add the word to the hash table anagramTable
+	private void addWord(String s) {
+		if (anagramTable.containsKey(myHashCode(s))) {
+			//create a temp String called temp and use this  to get the hashcode of word
+			ArrayList<String> temp = anagramTable.get(myHashCode(s));
+			temp.add(s);
+			anagramTable.replace(myHashCode(s), temp);
+		} else {
+			ArrayList<String> temp = new ArrayList<String>();
+			temp.add(s);
+			anagramTable.put(myHashCode(s), temp);
+		}
+	}
+	//we will get the hash code of the word
+	private Long myHashCode(String s) {
+		/*we will assign a char temp to be the representation of the
+		 * word we got, in char array form of course
+		 */
+		char[] temp = s.toCharArray();
+		long rep = 1;
+		for (int i = 0; i < temp.length; i++) {
+			/*we will use the arithmetic rule to multiply the code by
+			 * char number representation. 
+			 */
+			rep*= letterTable.get(temp[i]);
+		}
+		return rep;
+	}
+	//we simply will read the file with the processFile method
+	private void processFile(String s) throws IOException {
+		FileInputStream file = new FileInputStream(s);
+		BufferedReader buffer = new BufferedReader(new InputStreamReader(file));
+		String str;
+		//while the str is not null then we add the str
+		while ((str = buffer.readLine()) != null) {
+			this.addWord(str);
+		}
+
+	}
+	
+	private ArrayList<Map.Entry<Long, ArrayList<String>>> getMaxEntries() {
+		ArrayList<Map.Entry<Long, ArrayList<String>>> answer = new ArrayList<>();
+		int max = Integer.MIN_VALUE;
+		for (Map.Entry<Long, ArrayList<String>> entry : anagramTable.entrySet()) {
+			if (entry.getValue().size() > max) {
+				max = entry.getValue().size();
+			}
+		}
+		for (Map.Entry<Long, ArrayList<String>> entry : anagramTable.entrySet())
+
+		{
+
+			if (entry.getValue().size() == max) {
+				max = entry.getValue().size();
+				answer.add(entry);
+			}
+		}
+		return answer;
+	}
+
+	public static void main(String[] args) {
+		Anagrams anagram1 = new Anagrams();
+		anagram1.addWord("below");
+		Anagrams tester = new Anagrams();
+	
+		final long startTime = System.nanoTime();
+		try {
+			tester.processFile("words_alpha.txt");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		ArrayList<Map.Entry<Long, ArrayList<String>>> maxEntries = tester.getMaxEntries();
+		long key = maxEntries.get(0).getKey();
+		int numAnagrams = maxEntries.get(0).getValue().size();
+		final long estimatedTime = System.nanoTime() - startTime;
+		final double seconds = ((double) estimatedTime / 1000000000);
+		System.out.println("Elapsed Time : " + seconds);
+		System.out.println("\nKey of max anagrams : " + key);
+		System.out.println("\nList of max anagrams : " + maxEntries.get(0).getValue());
+		System.out.println("\nLength of list of max anagrams : " + numAnagrams);
+		
+		
+	}
+}
 
